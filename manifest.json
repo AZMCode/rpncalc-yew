@@ -1,0 +1,14 @@
+{
+    "$schema": "https://json.schemastore.org/web-manifest-combined.json",
+    "name": "RPNCalc",
+    "short_name": "RPNCalc",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#fff",
+    "description": "A PWA to calculate, RPN style!",
+    "icons": [{
+      "src": "rpncalc_icon_light.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    }]
+  }
