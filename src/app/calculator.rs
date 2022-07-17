@@ -47,7 +47,27 @@ impl ExtractCommand for Command {
 
 #[enum_dispatch]
 enum Op {
-    Arith(Arith)
+    Arith(Arith),
+    Constant(Constant),
+    Exp2(Exp2),
+    Exp(Exp),
+    Trig(Trig)
+}
+
+enum Constant {
+    Pi,
+    E,
+    Inf
+}
+
+impl ExtractCommand for Constant {
+    fn command_or_op(self) -> rpncalc::CommandOrOp {
+        match self {
+            Constant::E   => rpncalc::CommandOrOp::Op(rpncalc::ops::OpEnum::Constants(rpncalc::ops::Constants::E  )),
+            Constant::Pi  => rpncalc::CommandOrOp::Op(rpncalc::ops::OpEnum::Constants(rpncalc::ops::Constants::PI )),
+            Constant::Inf => rpncalc::CommandOrOp::Op(rpncalc::ops::OpEnum::Constants(rpncalc::ops::Constants::Inf)),
+        }
+    }
 }
 
 enum Arith {
@@ -65,6 +85,62 @@ impl ExtractCommand for Arith {
             Arith::Mul => rpncalc::ops::Arith::Mul,
             Arith::Div => rpncalc::ops::Arith::Div
         }))
+    }
+}
+
+enum Exp2 {
+    Pow,
+    LogN,
+    RootN
+}
+
+impl ExtractCommand for Exp2 {
+    fn command_or_op(self) -> rpncalc::CommandOrOp {
+        match self {
+            Exp2::Pow => rpncalc::CommandOrOp::Op(rpncalc::ops::OpEnum::ExponentialsBinary(rpncalc::ops::ExponentialsBinary::Pow)),
+            Exp2::LogN => rpncalc::CommandOrOp::Op(rpncalc::ops::OpEnum::ExponentialsBinary(rpncalc::ops::ExponentialsBinary::LogN)),
+            Exp2::RootN => rpncalc::CommandOrOp::Op(rpncalc::ops::OpEnum::ExponentialsBinary(rpncalc::ops::ExponentialsBinary::RootN))
+        }
+    }
+}
+
+enum Exp {
+    Log10,
+    Log2,
+    LogE,
+    Root2
+}
+
+impl ExtractCommand for Exp {
+    fn command_or_op(self) -> rpncalc::CommandOrOp {
+        match self {
+            Exp::Log10 => rpncalc::CommandOrOp::Op(rpncalc::ops::OpEnum::ExponentialsUnary(rpncalc::ops::ExponentialsUnary::Log10)),
+            Exp::Log2  => rpncalc::CommandOrOp::Op(rpncalc::ops::OpEnum::ExponentialsUnary(rpncalc::ops::ExponentialsUnary::Log2 )),
+            Exp::LogE  => rpncalc::CommandOrOp::Op(rpncalc::ops::OpEnum::ExponentialsUnary(rpncalc::ops::ExponentialsUnary::LogE )),
+            Exp::Root2 => rpncalc::CommandOrOp::Op(rpncalc::ops::OpEnum::ExponentialsUnary(rpncalc::ops::ExponentialsUnary::Root2))
+        }
+    }
+}
+
+enum Trig {
+    Sin,
+    Cos,
+    Tan,
+    ASin,
+    ACos,
+    ATan
+}
+
+impl ExtractCommand for Trig {
+    fn command_or_op(self) -> rpncalc::CommandOrOp {
+        match self {
+            Trig::Sin  => rpncalc::CommandOrOp::Op(rpncalc::ops::OpEnum::Trigonometric(rpncalc::ops::Trigonometric::Sin )),
+            Trig::Cos  => rpncalc::CommandOrOp::Op(rpncalc::ops::OpEnum::Trigonometric(rpncalc::ops::Trigonometric::Cos )),
+            Trig::Tan  => rpncalc::CommandOrOp::Op(rpncalc::ops::OpEnum::Trigonometric(rpncalc::ops::Trigonometric::Tan )),
+            Trig::ASin => rpncalc::CommandOrOp::Op(rpncalc::ops::OpEnum::Trigonometric(rpncalc::ops::Trigonometric::ASin)),
+            Trig::ACos => rpncalc::CommandOrOp::Op(rpncalc::ops::OpEnum::Trigonometric(rpncalc::ops::Trigonometric::ACos)),
+            Trig::ATan => rpncalc::CommandOrOp::Op(rpncalc::ops::OpEnum::Trigonometric(rpncalc::ops::Trigonometric::ATan))
+        }
     }
 }
 
@@ -149,7 +225,7 @@ impl Component for Calculator {
                                 )}> {"/"} </button>},
                         html!{<button class={{css!{grid-area: q;}}}onclick={ ctx.link().callback(move |_| CalculatorMsg::InsNum ) }> {"Ins"} </button>},
                 ]).collect::<Vec<_>>();
-            let comm_btns = html!{
+            let stack_btns = html!{
                 < >
                     <button onclick={ ctx.link().callback(move |_| CalculatorMsg::CommOrOp(
                         CommOrOp::Command(
@@ -171,6 +247,136 @@ impl Component for Calculator {
                             Command::Rev
                         )
                     )) }> { "Rev" } </button>
+                </>
+            };
+            let const_btns = html!{
+                < >
+                    <button onclick={ ctx.link().callback(move |_| CalculatorMsg::CommOrOp(
+                        CommOrOp::Op(
+                            Op::Constant(
+                                Constant::Pi
+                            )
+                        )
+                    )) }> {"Pi"} </button>
+                    <button onclick={ ctx.link().callback(move |_| CalculatorMsg::CommOrOp(
+                        CommOrOp::Op(
+                            Op::Constant(
+                                Constant::E
+                            )
+                        )
+                    )) }> {"E"} </button>
+                    <button onclick={ ctx.link().callback(move |_| CalculatorMsg::CommOrOp(
+                        CommOrOp::Op(
+                            Op::Constant(
+                                Constant::Inf
+                            )
+                        )
+                    )) }> {"Inf"} </button>
+                    <div></div>
+                </>
+            };
+            let pow2_btns = html!{
+                < >
+                    <button onclick={ctx.link().callback(move |_| CalculatorMsg::CommOrOp(
+                        CommOrOp::Op(
+                            Op::Exp2(
+                                Exp2::Pow
+                            )
+                        )
+                    ))}> { "Pow" } </button>
+                    <button onclick={ctx.link().callback(move |_| CalculatorMsg::CommOrOp(
+                        CommOrOp::Op(
+                            Op::Exp2(
+                                Exp2::LogN
+                            )
+                        )
+                    ))}> { "LogN" } </button>
+                    <button onclick={ctx.link().callback(move |_| CalculatorMsg::CommOrOp(
+                        CommOrOp::Op(
+                            Op::Exp2(
+                                Exp2::RootN
+                            )
+                        )
+                    ))}> { "RootN" } </button>
+                    <div></div>
+                </>
+            };
+            let pow_btns = html!{
+                < >
+                    <button onclick={ctx.link().callback(move |_| CalculatorMsg::CommOrOp(
+                        CommOrOp::Op(
+                            Op::Exp(
+                                Exp::Log10
+                            )
+                        )
+                    ))}> { "Log10" } </button>
+                    <button onclick={ctx.link().callback(move |_| CalculatorMsg::CommOrOp(
+                        CommOrOp::Op(
+                            Op::Exp(
+                                Exp::Log2
+                            )
+                        )
+                    ))}> { "Log2" } </button>
+                    <button onclick={ctx.link().callback(move |_| CalculatorMsg::CommOrOp(
+                        CommOrOp::Op(
+                            Op::Exp(
+                                Exp::LogE
+                            )
+                        )
+                    ))}> { "LogE" } </button>
+                    <button onclick={ctx.link().callback(move |_| CalculatorMsg::CommOrOp(
+                        CommOrOp::Op(
+                            Op::Exp(
+                                Exp::Root2
+                            )
+                        )
+                    ))}> { "Root2" } </button>
+                </>
+            };
+            let trig_btns = html!{
+                < >
+                    <button onclick={ctx.link().callback(move |_| CalculatorMsg::CommOrOp(
+                        CommOrOp::Op(
+                            Op::Trig(
+                                Trig::Sin
+                            )
+                        )
+                    ))}> { "Sin" } </button>
+                    <button onclick={ctx.link().callback(move |_| CalculatorMsg::CommOrOp(
+                        CommOrOp::Op(
+                            Op::Trig(
+                                Trig::Cos
+                            )
+                        )
+                    ))}> { "Cos" } </button>
+                    <button onclick={ctx.link().callback(move |_| CalculatorMsg::CommOrOp(
+                        CommOrOp::Op(
+                            Op::Trig(
+                                Trig::Tan
+                            )
+                        )
+                    ))}> { "Tan" } </button>
+                    <button onclick={ctx.link().callback(move |_| CalculatorMsg::CommOrOp(
+                        CommOrOp::Op(
+                            Op::Trig(
+                                Trig::ASin
+                            )
+                        )
+                    ))}> { "ASin" } </button>
+                    <button onclick={ctx.link().callback(move |_| CalculatorMsg::CommOrOp(
+                        CommOrOp::Op(
+                            Op::Trig(
+                                Trig::ACos
+                            )
+                        )
+                    ))}> { "ACos" } </button>
+                    <button onclick={ctx.link().callback(move |_| CalculatorMsg::CommOrOp(
+                        CommOrOp::Op(
+                            Op::Trig(
+                                Trig::ATan
+                            )
+                        )
+                    ))}> { "ATan" } </button>
                 </>
             };
             let stack_slice = self.calc_unit.get_stack();
@@ -229,7 +435,7 @@ impl Component for Calculator {
                         }}}></div>
                     </div>
                     <div    class={{css!{grid-area: c; text-align: right; overflow-x: hidden; text-overflow: ellipsis;}}}> { self.display.as_str() } </div>
-                    <div    class={{css!{display: grid; grid: ". ." 1fr; scroll-snap-type: x mandatory; grid-area: d; overflow-x: scroll; overflow-y: hidden;}}}>
+                    <div    class={{css!{display: grid; grid: ". . ." 1fr; scroll-snap-type: x mandatory; grid-area: d; overflow-x: scroll; overflow-y: hidden;}}}>
                         <div class={{css!{
                             scroll-snap-align: start;
                             display: grid;
@@ -248,13 +454,25 @@ impl Component for Calculator {
                             display: grid;
                             width: 100vw;
                             height: 100%;
-                            grid:   ". . . . ." 1fr
-                                    ". . . . ." 1fr
-                                    ". . . . ." 1fr
-                                    ". . . . ." 1fr
-                                    ". . . . ." 1fr;
+                            grid:   ". . . ." 1fr
+                                    ". . . ." 1fr
+                                    ". . . ." 1fr
+                                    ". . . ." 1fr;
                         }}}>
-                            { comm_btns }
+                            { stack_btns }
+                            { const_btns }
+                            {  pow_btns  }
+                            {  pow2_btns }
+                        </div>
+                        <div class={{css!{
+                            scroll-snap-align: start;
+                            display: grid;
+                            width: 100vw;
+                            height: 100%;
+                            grid:   ". . ." 1fr
+                                    ". . ." 1fr;
+                        }}}>
+                            { trig_btns }
                         </div>
                     </div>
                 </div>
