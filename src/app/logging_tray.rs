@@ -1,5 +1,6 @@
 use yew::prelude::*;
 use yew::html::Scope;
+use stylist::css;
 use crate::utils::scope_channel::Sender;
 #[allow(unused_imports)]
 use log::{trace, debug, info, warn, error};
@@ -45,8 +46,8 @@ impl Component for LoggingTray {
                     grid:   "a b b b b" 1fr
                             ". b b b b" 15fr;
                 }}}>
-                    <button class={{css!{grid-area: a}}} onclick={ parent.callback(|_| super::AppMsg::ShowCalculator ) }> { "Return to Calculator" } </button> <br/>
-                    <div class={{css!{grid-area: b}}}>
+                    <button class={{css!{grid-area: a;}}} onclick={ parent.callback(|_| super::AppMsg::ShowCalculator ) }> { "Return to Calculator" } </button> <br/>
+                    <div class={{css!{grid-area: b;}}}>
                         <p> { "Logging Tray and Configuration" } </p>
                         <details>
                             <summary> { "Logging Tray" } </summary>

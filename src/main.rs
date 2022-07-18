@@ -1,3 +1,4 @@
+#![feature(cell_update)]
 mod app;
 mod utils;
 mod calc_unit;

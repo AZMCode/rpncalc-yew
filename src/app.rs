@@ -41,19 +41,19 @@ pub struct SharedConfigHandle(Weak<Cell<SharedConfig>>);
 
 impl Clone for SharedConfigHandle {
     fn clone(&self) -> Self {
-        SharecConfigHandle(Weak::clone(&self.0))
+        SharedConfigHandle(Weak::clone(&self.0))
     }
 }
 
 impl PartialEq for SharedConfigHandle {
-    fn eq(&self, other: &Self) -> bool {
+    fn eq(&self, _other: &Self) -> bool {
         true
     }
 }
 
 
 impl SharedConfigHandle {
-    fn get(&mut self) -> SharedConfig {
+    fn get(&self) -> SharedConfig {
         (self.0).upgrade().unwrap().get()
     }
 }
@@ -98,7 +98,7 @@ impl Component for App {
                 <LoggingTray visible=false scope_snd={ logging_tray_snd } config={ shared_config_handle }></LoggingTray>
             </>
         };
-        App { children, calculator_recv, logging_tray_recv }
+        App { children, calculator_recv, logging_tray_recv, shared_config }
     }
     fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
@@ -113,7 +113,8 @@ impl Component for App {
                 self.calculator_recv.recv().send_message(calculator_msg);
                 self.logging_tray_recv.recv().send_message(logging_tray_msg);    
             },
-            AppMsg::LogMsg(s) => self.logging_tray_recv.recv().send_message(logging_tray::LoggingTrayMsg::LogMsg(s))
+            AppMsg::LogMsg(s) => self.logging_tray_recv.recv().send_message(logging_tray::LoggingTrayMsg::LogMsg(s)),
+            AppMsg::ChangeColorTheme(new_c) => { self.shared_config.update(|mut c| { c.color_theme = new_c; c}); }
         }   
         true
     }
