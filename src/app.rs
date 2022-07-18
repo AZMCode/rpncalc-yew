@@ -2,7 +2,8 @@ use yew::prelude::*;
 use yew::html::ChildrenRenderer;
 use stylist::yew::Global;
 use stylist::css;
-use crate::utils::scope_channel::{Sender,Receiver,scope_channel};
+use crate::utils::scope_channel::{Receiver,scope_channel};
+#[allow(unused_imports)]
 use log::{trace, debug, info, warn, error};
 
 mod calculator;
@@ -23,7 +24,7 @@ pub struct App {
 impl Component for App {
     type Message = AppMsg;
     type Properties = ();
-    fn create(ctx: &Context<Self>) -> Self {
+    fn create(_ctx: &Context<Self>) -> Self {
         use calculator::Calculator;
         use logging_tray::LoggingTray;
         let (calculator_snd, calculator_recv) = scope_channel();
@@ -53,7 +54,7 @@ impl Component for App {
         };
         App { children, calculator_recv, logging_tray_recv }
     }
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             AppMsg::ShowCalculator | AppMsg::ShowLoggingTray => {
                 let mut calculator_msg = calculator::CalculatorMsg::Hide;
@@ -70,7 +71,7 @@ impl Component for App {
         }   
         true
     }
-    fn view(&self, ctx: &Context<Self>) -> Html {
+    fn view(&self, _ctx: &Context<Self>) -> Html {
         let rendered_children = ChildrenRenderer::new(vec![self.children.clone()]);
         html!(
             < >

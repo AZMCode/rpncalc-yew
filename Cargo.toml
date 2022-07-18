@@ -9,6 +9,7 @@ edition = "2021"
 yew = "0.19.3"
 stylist = { version = "0.10.1", features = [ "yew" ] }
 js-sys = "0.3.58"
+web-sys = { version = "0.3.58", features = [ "Window", "Document", "Element", "ScrollToOptions", "ScrollBehavior" ] }
 paste = "1.0.7"
 log = "0.4.17"
 console_log = "0.2.0"

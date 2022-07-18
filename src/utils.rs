@@ -2,13 +2,14 @@ pub mod scope_channel {
     use yew::html::Scope;
     use std::rc::Rc;
     use once_cell::unsync::OnceCell;
+    use super::Ignore;
 
     pub struct Sender<T: yew::Component>(Rc<OnceCell<Scope<T>>>);
     pub struct Receiver<T: yew::Component>(Rc<OnceCell<Scope<T>>>);
 
     impl<T: yew::Component> Sender<T> {
         pub fn send(&self,val: Scope<T>) {
-            (self.0).set(val);
+            (self.0).set(val).ignore();
         }
     }
 
@@ -31,3 +32,9 @@ pub mod scope_channel {
         (Sender(inner.clone()),Receiver(inner))
     }
 }
+
+pub trait Ignore: Sized {
+    fn ignore(self) {}
+}
+
+impl<T: Sized> Ignore for T {}

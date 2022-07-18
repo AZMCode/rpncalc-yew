@@ -2,8 +2,10 @@ use yew::prelude::*;
 use stylist::css;
 use yew::html::Scope;
 use crate::utils::scope_channel::Sender;
+use crate::utils::Ignore;
+#[allow(unused_imports)]
 use log::{trace, debug, info, warn, error};
-use std::{rc::Rc, str::FromStr};
+use std::str::FromStr;
 use enum_dispatch::enum_dispatch;
 
 pub enum CalculatorMsg {
@@ -13,12 +15,20 @@ pub enum CalculatorMsg {
     InsNum,
     Backspace,
     Dot,
-    CommOrOp(CommOrOp)
+    CommOrOp(CommOrOpWrapper)
 }
 
 #[enum_dispatch(CommOrOp,Op)]
 trait ExtractCommand {
     fn command_or_op(self) -> rpncalc::CommandOrOp;
+}
+
+pub struct CommOrOpWrapper(CommOrOp);
+
+impl ExtractCommand for CommOrOpWrapper {
+    fn command_or_op(self) -> rpncalc::CommandOrOp {
+        (self.0).command_or_op()
+    }
 }
 
 #[enum_dispatch]
@@ -191,36 +201,36 @@ impl Component for Calculator {
                         html!{<button class={{css!{grid-area: k;}}} onclick={ ctx.link().callback(move |_| CalculatorMsg::Dot)           }> { "." } </button>},
                         html!{<button class={{css!{grid-area: l;}}} onclick={ ctx.link().callback(move |_| CalculatorMsg::Backspace)     }> {"<-" } </button>},
                         html!{<button class={{css!{grid-area: m;}}} onclick={ ctx.link().callback(move |_| CalculatorMsg::CommOrOp(
-                                        CommOrOp::Op(
+                                        CommOrOpWrapper(CommOrOp::Op(
                                             Op::Arith(
                                                 Arith::Add
                                             )
-                                        )
+                                        ))
                                     )
                                 )}
                             > {"+"} </button>},
                         html!{<button class={{css!{grid-area: n;}}} onclick={ ctx.link().callback(move |_| CalculatorMsg::CommOrOp(
-                                        CommOrOp::Op(
+                                        CommOrOpWrapper(CommOrOp::Op(
                                             Op::Arith(
                                                 Arith::Sub
                                             )
-                                        )
+                                        ))
                                     )
                                 )}> {"-"} </button>},
                         html!{<button class={{css!{grid-area: o;}}} onclick={ ctx.link().callback(move |_| CalculatorMsg::CommOrOp(
-                                        CommOrOp::Op(
+                                        CommOrOpWrapper(CommOrOp::Op(
                                             Op::Arith(
                                                 Arith::Mul
                                             )
-                                        )
+                                        ))
                                     )
                                 )}> {"*"} </button>},
                         html!{<button class={{css!{grid-area: p;}}} onclick={ ctx.link().callback(move |_| CalculatorMsg::CommOrOp(
-                                        CommOrOp::Op(
+                                        CommOrOpWrapper(CommOrOp::Op(
                                             Op::Arith(
                                                 Arith::Div
                                             )
-                                        )
+                                        ))
                                     )
                                 )}> {"/"} </button>},
                         html!{<button class={{css!{grid-area: q;}}}onclick={ ctx.link().callback(move |_| CalculatorMsg::InsNum ) }> {"Ins"} </button>},
@@ -228,49 +238,49 @@ impl Component for Calculator {
             let stack_btns = html!{
                 < >
                     <button onclick={ ctx.link().callback(move |_| CalculatorMsg::CommOrOp(
-                        CommOrOp::Command(
+                        CommOrOpWrapper(CommOrOp::Command(
                             Command::Drop
-                        )
+                        ))
                     )) }> { "Drop" } </button>
                     <button onclick={ ctx.link().callback(move |_| CalculatorMsg::CommOrOp(
-                        CommOrOp::Command(
+                        CommOrOpWrapper(CommOrOp::Command(
                             Command::Dup
-                        )
+                        ))
                     )) }> { "Dup" } </button>
                     <button onclick={ ctx.link().callback(move |_| CalculatorMsg::CommOrOp(
-                        CommOrOp::Command(
+                        CommOrOpWrapper(CommOrOp::Command(
                             Command::Swap
-                        )
+                        ))
                     )) }> { "Swap" } </button>
                     <button onclick={ ctx.link().callback(move |_| CalculatorMsg::CommOrOp(
-                        CommOrOp::Command(
+                        CommOrOpWrapper(CommOrOp::Command(
                             Command::Rev
-                        )
+                        ))
                     )) }> { "Rev" } </button>
                 </>
             };
             let const_btns = html!{
                 < >
                     <button onclick={ ctx.link().callback(move |_| CalculatorMsg::CommOrOp(
-                        CommOrOp::Op(
+                        CommOrOpWrapper(CommOrOp::Op(
                             Op::Constant(
                                 Constant::Pi
                             )
-                        )
+                        ))
                     )) }> {"Pi"} </button>
                     <button onclick={ ctx.link().callback(move |_| CalculatorMsg::CommOrOp(
-                        CommOrOp::Op(
+                        CommOrOpWrapper(CommOrOp::Op(
                             Op::Constant(
                                 Constant::E
                             )
-                        )
+                        ))
                     )) }> {"E"} </button>
                     <button onclick={ ctx.link().callback(move |_| CalculatorMsg::CommOrOp(
-                        CommOrOp::Op(
+                        CommOrOpWrapper(CommOrOp::Op(
                             Op::Constant(
                                 Constant::Inf
                             )
-                        )
+                        ))
                     )) }> {"Inf"} </button>
                     <div></div>
                 </>
@@ -278,25 +288,25 @@ impl Component for Calculator {
             let pow2_btns = html!{
                 < >
                     <button onclick={ctx.link().callback(move |_| CalculatorMsg::CommOrOp(
-                        CommOrOp::Op(
+                        CommOrOpWrapper(CommOrOp::Op(
                             Op::Exp2(
                                 Exp2::Pow
                             )
-                        )
+                        ))
                     ))}> { "Pow" } </button>
                     <button onclick={ctx.link().callback(move |_| CalculatorMsg::CommOrOp(
-                        CommOrOp::Op(
+                        CommOrOpWrapper(CommOrOp::Op(
                             Op::Exp2(
                                 Exp2::LogN
                             )
-                        )
+                        ))
                     ))}> { "LogN" } </button>
                     <button onclick={ctx.link().callback(move |_| CalculatorMsg::CommOrOp(
-                        CommOrOp::Op(
+                        CommOrOpWrapper(CommOrOp::Op(
                             Op::Exp2(
                                 Exp2::RootN
                             )
-                        )
+                        ))
                     ))}> { "RootN" } </button>
                     <div></div>
                 </>
@@ -304,78 +314,78 @@ impl Component for Calculator {
             let pow_btns = html!{
                 < >
                     <button onclick={ctx.link().callback(move |_| CalculatorMsg::CommOrOp(
-                        CommOrOp::Op(
+                        CommOrOpWrapper(CommOrOp::Op(
                             Op::Exp(
                                 Exp::Log10
                             )
-                        )
+                        ))
                     ))}> { "Log10" } </button>
                     <button onclick={ctx.link().callback(move |_| CalculatorMsg::CommOrOp(
-                        CommOrOp::Op(
+                        CommOrOpWrapper(CommOrOp::Op(
                             Op::Exp(
                                 Exp::Log2
                             )
-                        )
+                        ))
                     ))}> { "Log2" } </button>
                     <button onclick={ctx.link().callback(move |_| CalculatorMsg::CommOrOp(
-                        CommOrOp::Op(
+                        CommOrOpWrapper(CommOrOp::Op(
                             Op::Exp(
                                 Exp::LogE
                             )
-                        )
+                        ))
                     ))}> { "LogE" } </button>
                     <button onclick={ctx.link().callback(move |_| CalculatorMsg::CommOrOp(
-                        CommOrOp::Op(
+                        CommOrOpWrapper(CommOrOp::Op(
                             Op::Exp(
                                 Exp::Root2
                             )
-                        )
+                        ))
                     ))}> { "Root2" } </button>
                 </>
             };
             let trig_btns = html!{
                 < >
                     <button onclick={ctx.link().callback(move |_| CalculatorMsg::CommOrOp(
-                        CommOrOp::Op(
+                        CommOrOpWrapper(CommOrOp::Op(
                             Op::Trig(
                                 Trig::Sin
                             )
-                        )
+                        ))
                     ))}> { "Sin" } </button>
                     <button onclick={ctx.link().callback(move |_| CalculatorMsg::CommOrOp(
-                        CommOrOp::Op(
+                        CommOrOpWrapper(CommOrOp::Op(
                             Op::Trig(
                                 Trig::Cos
                             )
-                        )
+                        ))
                     ))}> { "Cos" } </button>
                     <button onclick={ctx.link().callback(move |_| CalculatorMsg::CommOrOp(
-                        CommOrOp::Op(
+                        CommOrOpWrapper(CommOrOp::Op(
                             Op::Trig(
                                 Trig::Tan
                             )
-                        )
+                        ))
                     ))}> { "Tan" } </button>
                     <button onclick={ctx.link().callback(move |_| CalculatorMsg::CommOrOp(
-                        CommOrOp::Op(
+                        CommOrOpWrapper(CommOrOp::Op(
                             Op::Trig(
                                 Trig::ASin
                             )
-                        )
+                        ))
                     ))}> { "ASin" } </button>
                     <button onclick={ctx.link().callback(move |_| CalculatorMsg::CommOrOp(
-                        CommOrOp::Op(
+                        CommOrOpWrapper(CommOrOp::Op(
                             Op::Trig(
                                 Trig::ACos
                             )
-                        )
+                        ))
                     ))}> { "ACos" } </button>
                     <button onclick={ctx.link().callback(move |_| CalculatorMsg::CommOrOp(
-                        CommOrOp::Op(
+                        CommOrOpWrapper(CommOrOp::Op(
                             Op::Trig(
                                 Trig::ATan
                             )
-                        )
+                        ))
                     ))}> { "ATan" } </button>
                 </>
             };
@@ -495,7 +505,7 @@ impl Component for Calculator {
                 self.stack_affected = true;
                 let ins_num = rpncalc::CommandOrOp::Op(rpncalc::ops::OpEnum::InsNum(rpncalc::ops::InsNum::from_str(&self.display).unwrap()));
                 self.display = "0".to_string();
-                self.calc_unit.run_command(ins_num);
+                self.calc_unit.run_command(ins_num).ignore();
             }
             CalculatorMsg::CommOrOp(c) => {
                 self.stack_affected = true;
@@ -515,12 +525,16 @@ impl Component for Calculator {
         }
         true
     }
-    fn rendered(&mut self, ctx: &Context<Self>, first_render: bool) {
+    fn rendered(&mut self, _ctx: &Context<Self>, _first_render: bool) {
         if self.stack_affected {
-            unsafe {js_sys::eval("{
-                let stackscroller = document.getElementById(\"stackscroller\");
-                stackscroller.scrollTo({left:0,top:stackscroller.scrollHeight, behavior: \"smooth\"});
-            }")};
+            let elm = web_sys::window().unwrap().document().unwrap().get_element_by_id("stackscroller").unwrap();
+            elm.scroll_to_with_scroll_to_options(&{
+                let mut opt = web_sys::ScrollToOptions::new();
+                opt.left(0.0);
+                opt.top(elm.scroll_height() as f64);
+                opt.behavior(web_sys::ScrollBehavior::Smooth);
+                opt
+            });
         }
     }
 }

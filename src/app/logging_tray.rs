@@ -1,7 +1,7 @@
 use yew::prelude::*;
 use yew::html::Scope;
 use crate::utils::scope_channel::Sender;
-use std::rc::Rc;
+#[allow(unused_imports)]
 use log::{trace, debug, info, warn, error};
 pub enum LoggingTrayMsg {
     Show,
@@ -34,7 +34,7 @@ impl Component for LoggingTray {
             html!{ < > { "LoggingTray" } <br/> <button onclick={ parent.callback(|_| super::AppMsg::ShowCalculator ) }> { "Switch to Calculator" } </button> <br/> <pre> {&self.msgs} </pre> </> }
         } else { html!{} }
     }
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             LoggingTrayMsg::Show => self.visible = true,
             LoggingTrayMsg::Hide => self.visible = false,

@@ -444,6 +444,7 @@ dependencies = [
  "paste",
  "rpncalc",
  "stylist",
+ "web-sys",
  "yew",
 ]
 
