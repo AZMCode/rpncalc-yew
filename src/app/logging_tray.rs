@@ -49,7 +49,7 @@ impl Component for LoggingTray {
                     <div class={{css!{grid-area: b}}}>
                         <p> { "Logging Tray and Configuration" } </p>
                         <details>
-                            <summary> Logging Tray </summary>
+                            <summary> { "Logging Tray" } </summary>
                             <pre> {&self.msgs} </pre>
                         </details>
                         <button onclick={ parent.callback(move |_| super::AppMsg::ChangeColorTheme(switch_to)) }> { msg } </button>
