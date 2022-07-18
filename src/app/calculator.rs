@@ -8,16 +8,6 @@ use log::{trace, debug, info, warn, error};
 use std::str::FromStr;
 use enum_dispatch::enum_dispatch;
 
-pub enum CalculatorMsg {
-    Show,
-    Hide,
-    DigitInput(u8),
-    InsNum,
-    Backspace,
-    Dot,
-    CommOrOp(CommOrOpWrapper)
-}
-
 #[enum_dispatch(CommOrOp,Op)]
 trait ExtractCommand {
     fn command_or_op(self) -> rpncalc::CommandOrOp;
@@ -154,18 +144,28 @@ impl ExtractCommand for Trig {
     }
 }
 
+pub enum CalculatorMsg {
+    Show,
+    Hide,
+    DigitInput(u8),
+    InsNum,
+    Backspace,
+    Dot,
+    CommOrOp(CommOrOpWrapper)
+}
+
+#[derive(PartialEq,Properties)]
+pub struct CalculatorProp {
+    pub scope_snd: Sender<Calculator>,
+    pub config: super::SharedConfigHandle,
+    pub visible: bool
+}
 
 pub struct Calculator {
     visible: bool,
     display: String,
     stack_affected: bool,
     calc_unit: crate::calc_unit::CalcUnit
-}
-
-#[derive(PartialEq,Properties)]
-pub struct CalculatorProp {
-    pub scope_snd: Sender<Calculator>,
-    pub visible: bool
 }
 
 impl Component for Calculator {

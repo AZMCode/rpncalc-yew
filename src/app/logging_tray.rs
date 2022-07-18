@@ -17,6 +17,7 @@ pub struct LoggingTray {
 #[derive(PartialEq,Properties)]
 pub struct LoggingTrayProps {
     pub scope_snd: Sender<LoggingTray>,
+    pub config: super::SharedConfigHandle,
     pub visible: bool
 }
 
@@ -29,9 +30,32 @@ impl Component for LoggingTray {
     }
     fn view(&self, ctx: &Context<Self>) -> Html {
         if self.visible {
-            debug!("Rendering Logging Tray as Visible");
             let parent: Scope<super::App> = ctx.link().get_parent().unwrap().clone().downcast();
-            html!{ < > { "LoggingTray" } <br/> <button onclick={ parent.callback(|_| super::AppMsg::ShowCalculator ) }> { "Switch to Calculator" } </button> <br/> <pre> {&self.msgs} </pre> </> }
+            let switch_to = match ctx.props().config.get().color_theme {
+                super::ColorTheme::Dark => super::ColorTheme::Light,
+                super::ColorTheme::Light => super::ColorTheme::Dark
+            };
+            let msg = format!("Switch to {}",match switch_to {
+                super::ColorTheme::Dark => "Dark Mode",
+                super::ColorTheme::Light => "Light Mode"
+            });
+            html!{ 
+                <div class={{ css!{
+                    display: grid;
+                    grid:   "a b b b b" 1fr
+                            ". b b b b" 15fr;
+                }}}>
+                    <button class={{css!{grid-area: a}}} onclick={ parent.callback(|_| super::AppMsg::ShowCalculator ) }> { "Return to Calculator" } </button> <br/>
+                    <div class={{css!{grid-area: b}}}>
+                        <p> { "Logging Tray and Configuration" } </p>
+                        <details>
+                            <summary> Logging Tray </summary>
+                            <pre> {&self.msgs} </pre>
+                        </details>
+                        <button onclick={ parent.callback(move |_| super::AppMsg::ChangeColorTheme(switch_to)) }> { msg } </button>
+                    </div>
+                </div>
+            }
         } else { html!{} }
     }
     fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {

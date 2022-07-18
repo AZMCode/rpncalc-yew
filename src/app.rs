@@ -2,6 +2,8 @@ use yew::prelude::*;
 use yew::html::ChildrenRenderer;
 use stylist::yew::Global;
 use stylist::css;
+use std::rc::{Rc,Weak};
+use std::cell::Cell;
 use crate::utils::scope_channel::{Receiver,scope_channel};
 #[allow(unused_imports)]
 use log::{trace, debug, info, warn, error};
@@ -12,13 +14,55 @@ mod logging_tray;
 pub enum AppMsg {
     ShowCalculator,
     ShowLoggingTray,
-    LogMsg(String)
+    LogMsg(String),
+    ChangeColorTheme(ColorTheme)
+}
+
+#[derive(Clone,Copy)]
+pub enum ColorTheme {
+    Dark,
+    Light
+}
+
+#[derive(Clone,Copy)]
+pub struct SharedConfig {
+    color_theme: ColorTheme
+}
+
+impl Default for SharedConfig {
+    fn default() -> Self {
+        SharedConfig {
+            color_theme: ColorTheme::Light
+        }
+    }
+}
+
+pub struct SharedConfigHandle(Weak<Cell<SharedConfig>>);
+
+impl Clone for SharedConfigHandle {
+    fn clone(&self) -> Self {
+        SharecConfigHandle(Weak::clone(&self.0))
+    }
+}
+
+impl PartialEq for SharedConfigHandle {
+    fn eq(&self, other: &Self) -> bool {
+        true
+    }
+}
+
+
+impl SharedConfigHandle {
+    fn get(&mut self) -> SharedConfig {
+        (self.0).upgrade().unwrap().get()
+    }
 }
 
 pub struct App {
     children: Html,
     calculator_recv: Receiver<calculator::Calculator>,
-    logging_tray_recv: Receiver<logging_tray::LoggingTray>
+    logging_tray_recv: Receiver<logging_tray::LoggingTray>,
+    shared_config: Rc<Cell<SharedConfig>>
 }
 
 impl Component for App {
@@ -27,6 +71,8 @@ impl Component for App {
     fn create(_ctx: &Context<Self>) -> Self {
         use calculator::Calculator;
         use logging_tray::LoggingTray;
+        let shared_config = Rc::new(Cell::new(SharedConfig::default()));
+        let shared_config_handle = SharedConfigHandle(Rc::downgrade(&shared_config));
         let (calculator_snd, calculator_recv) = scope_channel();
         let (logging_tray_snd, logging_tray_recv) = scope_channel();
         let children = html!{
@@ -48,8 +94,8 @@ impl Component for App {
                         border: 0;
                     }
                 }}}></Global>
-                <Calculator visible=true scope_snd={ calculator_snd }></Calculator>
-                <LoggingTray visible=false scope_snd={ logging_tray_snd }></LoggingTray>
+                <Calculator visible=true scope_snd={ calculator_snd } config={ shared_config_handle.clone() }></Calculator>
+                <LoggingTray visible=false scope_snd={ logging_tray_snd } config={ shared_config_handle }></LoggingTray>
             </>
         };
         App { children, calculator_recv, logging_tray_recv }
