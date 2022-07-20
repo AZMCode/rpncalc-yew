@@ -3,6 +3,18 @@
 version = 3
 
 [[package]]
+name = "ambassador"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5bcbad70f1bf852d280ac8ba277df761e7c1749072a05db9b9506d201aab4b59"
+dependencies = [
+ "itertools",
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "atty"
 version = "0.2.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -107,18 +119,6 @@ name = "either"
 version = "1.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3f107b87b6afc2a64fd13cac55fe06d6c8859f12d4b14cbcdd2c67d0976781be"
-
-[[package]]
-name = "enum_dispatch"
-version = "0.3.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0eb359f1476bf611266ac1f5355bc14aeca37b299d0ebccc038ee7058891c9cb"
-dependencies = [
- "once_cell",
- "proc-macro2",
- "quote",
- "syn",
-]
 
 [[package]]
 name = "fastrand"
@@ -436,8 +436,8 @@ dependencies = [
 name = "rpncalc-yew"
 version = "0.1.0"
 dependencies = [
+ "ambassador",
  "console_log",
- "enum_dispatch",
  "js-sys",
  "log",
  "once_cell",

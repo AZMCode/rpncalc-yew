@@ -13,6 +13,6 @@ web-sys = { version = "0.3.58", features = [ "Window", "Document", "Element", "S
 paste = "1.0.7"
 log = "0.4.17"
 console_log = "0.2.0"
-enum_dispatch = "0.3.8"
+ambassador = "0.3.1"
 rpncalc = { path = "../" }
 once_cell = "1.13.0"

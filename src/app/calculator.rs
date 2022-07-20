@@ -6,22 +6,19 @@ use crate::utils::Ignore;
 #[allow(unused_imports)]
 use log::{trace, debug, info, warn, error};
 use std::str::FromStr;
-use enum_dispatch::enum_dispatch;
+use ambassador::{delegatable_trait,Delegate};
 
-#[enum_dispatch(CommOrOp,Op)]
-trait ExtractCommand {
+#[delegatable_trait]
+pub trait ExtractCommand {
     fn command_or_op(self) -> rpncalc::CommandOrOp;
 }
 
+#[derive(Delegate)]
+#[delegate(ExtractCommand)]
 pub struct CommOrOpWrapper(CommOrOp);
 
-impl ExtractCommand for CommOrOpWrapper {
-    fn command_or_op(self) -> rpncalc::CommandOrOp {
-        (self.0).command_or_op()
-    }
-}
-
-#[enum_dispatch]
+#[derive(Delegate)]
+#[delegate(ExtractCommand)]
 enum CommOrOp {
     Command(Command),
     Op(Op)
@@ -45,7 +42,8 @@ impl ExtractCommand for Command {
     }
 }
 
-#[enum_dispatch]
+#[derive(Delegate)]
+#[delegate(ExtractCommand)]
 enum Op {
     Arith(Arith),
     Constant(Constant),
